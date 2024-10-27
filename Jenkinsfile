@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        GIT_CREDENTIALS = 'github-credentials-id'    // Jenkins credentials ID for GitHub
+        GIT_CREDENTIALS = 'MT_Jenkins'    // Jenkins credentials ID for GitHub
         REPO_URL = 'https://github.com/mikey31/jenkins.git'
         TEMPLATE_FILE = 'template.xml'               // XML template file
         CSV_FILE = 'input.csv'                       // Input CSV file
