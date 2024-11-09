@@ -16,13 +16,14 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
+                // Use 'master' instead of 'main' as the branch name
                 git branch: 'master', credentialsId: "${GIT_CREDENTIALS}", url: "${REPO_URL}"
             }
         }
 
         stage('Prepare Environment') {
             steps {
-                // Use if statement to check if directory exists before creating it
+                // Only create the directory if it does not exist
                 bat """
                 if not exist ${XML_OUTPUT_DIR} (
                     mkdir ${XML_OUTPUT_DIR}
@@ -34,6 +35,7 @@ pipeline {
         stage('Generate XML Files') {
             steps {
                 script {
+                    // Write the Python script that generates XML files
                     writeFile file: 'generate_xml.py', text: """
 import csv
 import os
@@ -64,7 +66,11 @@ with open(csv_path, newline='') as csvfile:
             print("Generated: {}".format(output_file))
                     """
                     
-                    bat 'python generate_xml.py'
+                    // Run the Python script with the specified Python path
+                    bat """
+                    set PATH=C:\\Users\\Mick\\AppData\\Local\\Programs\\Python\\Python39;%PATH%
+                    python generate_xml.py
+                    """
                 }
             }
         }
