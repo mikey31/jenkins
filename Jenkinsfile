@@ -30,6 +30,13 @@ pipeline {
             }
         }
 
+        stage('Debug Workspace Files') {
+            steps {
+                // List all files and directories in the workspace to check where the CSV file is located
+                bat "dir /S"
+            }
+        }
+
         stage('Locate CSV File') {
             steps {
                 script {
