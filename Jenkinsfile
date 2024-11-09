@@ -30,34 +30,19 @@ pipeline {
             }
         }
 
-        stage('List All Files in Workspace') {
-            steps {
-                echo "Listing all files in workspace to locate the uploaded CSV file:"
-                bat "dir /S /A"  // List all files and folders recursively
-            }
-        }
-
-        stage('Locate CSV File in Workspace') {
+        stage('Check Uploaded CSV File') {
             steps {
                 script {
-                    // Use a bat command to find the first CSV file in any subdirectory of the workspace
-                    def csvFilePath = ''
-                    bat """
-                    for /R %%f in (*.csv) do (
-                        set CSV_PATH=%%f
-                        goto done
-                    )
-                    :done
-                    if not defined CSV_PATH (
-                        echo No CSV file found in the workspace.
-                        exit /b 1
-                    ) else (
-                        echo Found CSV file: %CSV_PATH%
-                    )
-                    """
+                    // Check if CSV file parameter is recognized and print its path
+                    if (params.CSV_FILE != null) {
+                        echo "CSV file parameter found. Path: ${params.CSV_FILE}"
+                    } else {
+                        error "CSV file not uploaded. Please upload a valid CSV file."
+                    }
 
-                    // Set the found CSV file path as an environment variable for later use
-                    env.UPLOADED_CSV_FILE = "%CSV_PATH%"
+                    // Attempt to read the file to confirm access
+                    def csvContent = readFile file: "${params.CSV_FILE}"
+                    echo "CSV file content preview:\n${csvContent.take(500)}"  // Print the first 500 characters for inspection
                 }
             }
         }
@@ -98,10 +83,10 @@ with open(csv_path, newline='') as csvfile:
             print("Generated: {}".format(output_file))
                     """
                     
-                    // Run the Python script with the located CSV file path
+                    // Run the Python script with the path to the uploaded CSV file
                     bat """
                     set PATH=C:\\Users\\Mick\\AppData\\Local\\Programs\\Python\\Python39;%PATH%
-                    python generate_xml.py "%UPLOADED_CSV_FILE%"
+                    python generate_xml.py "${params.CSV_FILE}"
                     """
                 }
             }
