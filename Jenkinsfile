@@ -30,19 +30,22 @@ pipeline {
             }
         }
 
-        stage('Verify and Debug CSV File Path') {
+        stage('Locate CSV File') {
             steps {
                 script {
-                    // Print all environment variables to check available parameters and file paths
-                    echo "Printing all environment variables for debugging:"
-                    bat 'set'  // Use 'set' on Windows to print environment variables
-
-                    // Check if the CSV file parameter exists and is valid
-                    if (params.CSV_FILE == null || params.CSV_FILE.trim() == "") {
-                        error "CSV file not uploaded. Please upload a valid CSV file to continue."
+                    // Check if any CSV file is in the workspace
+                    def csvFile = ''
+                    def files = findFiles(glob: '*.csv')
+                    
+                    if (files.length > 0) {
+                        csvFile = files[0].path
+                        echo "CSV file found: ${csvFile}"
                     } else {
-                        echo "CSV file path: ${params.CSV_FILE}"
+                        error "No CSV file found in the workspace. Please upload a valid CSV file to continue."
                     }
+                    
+                    // Set the CSV file path as an environment variable for use in later stages
+                    env.UPLOADED_CSV_FILE = csvFile
                 }
             }
         }
@@ -83,10 +86,10 @@ with open(csv_path, newline='') as csvfile:
             print("Generated: {}".format(output_file))
                     """
                     
-                    // Run the Python script with the exact path to the uploaded CSV file
+                    // Run the Python script with the located CSV file path
                     bat """
                     set PATH=C:\\Users\\Mick\\AppData\\Local\\Programs\\Python\\Python39;%PATH%
-                    python generate_xml.py "${params.CSV_FILE}"
+                    python generate_xml.py "${env.UPLOADED_CSV_FILE}"
                     """
                 }
             }
