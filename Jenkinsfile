@@ -34,7 +34,11 @@ pipeline {
             steps {
                 script {
                     // Print the resolved path to the CSV file
-                    echo "CSV file path: ${params.CSV_FILE}"
+                    echo "CSV file path from parameter: ${params.CSV_FILE}"
+                    
+                    // Print all environment variables to check available parameters and file paths
+                    echo "Printing all environment variables for debugging:"
+                    bat 'set'  // Use 'set' on Windows to print environment variables
                 }
             }
         }
