@@ -39,7 +39,7 @@ import csv
 import os
 import sys
 
-# Use the CSV file uploaded to Jenkins as an argument
+# Use the CSV file passed as an argument
 csv_path = sys.argv[1]
 template_path = "${TEMPLATE_FILE}"
 output_dir = "${XML_OUTPUT_DIR}"
@@ -66,10 +66,10 @@ with open(csv_path, newline='') as csvfile:
             print("Generated: {}".format(output_file))
                     """
                     
-                    // Run the Python script with the uploaded CSV file as an argument
+                    // Run the Python script with the path to the uploaded CSV file
                     bat """
                     set PATH=C:\\Users\\Mick\\AppData\\Local\\Programs\\Python\\Python39;%PATH%
-                    python generate_xml.py %CSV_FILE%
+                    python generate_xml.py "%CSV_FILE%"
                     """
                 }
             }
