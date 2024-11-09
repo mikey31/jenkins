@@ -30,33 +30,15 @@ pipeline {
             }
         }
 
-        stage('Debug Workspace Files') {
-            steps {
-                // List all files and directories in the workspace to check where the CSV file is located
-                bat "dir /S"
-            }
-        }
-
-        stage('Locate CSV File') {
+        stage('Get Uploaded CSV File Path') {
             steps {
                 script {
-                    // Using a bat command to find the first CSV file in the workspace
-                    bat """
-                    for %%f in (*.csv) do (
-                        set "CSV_PATH=%%f"
-                        goto :done
-                    )
-                    :done
-                    if not defined CSV_PATH (
-                        echo No CSV file found in the workspace.
-                        exit /b 1
-                    ) else (
-                        echo Found CSV file: %CSV_PATH%
-                    )
-                    """
+                    // Retrieve the path of the uploaded CSV file
+                    def csvFilePath = params.CSV_FILE.getAbsolutePath()
+                    echo "CSV file path: ${csvFilePath}"
                     
-                    // Set the located CSV file path as an environment variable
-                    env.UPLOADED_CSV_FILE = "%CSV_PATH%"
+                    // Set the path as an environment variable for later use
+                    env.UPLOADED_CSV_FILE = csvFilePath
                 }
             }
         }
@@ -97,7 +79,7 @@ with open(csv_path, newline='') as csvfile:
             print("Generated: {}".format(output_file))
                     """
                     
-                    // Run the Python script with the located CSV file path
+                    // Run the Python script with the exact path to the uploaded CSV file
                     bat """
                     set PATH=C:\\Users\\Mick\\AppData\\Local\\Programs\\Python\\Python39;%PATH%
                     python generate_xml.py "%UPLOADED_CSV_FILE%"
