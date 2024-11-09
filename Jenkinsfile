@@ -17,7 +17,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 // Clone the repository
-                git branch: 'main', credentialsId: "${GIT_CREDENTIALS}", url: "${REPO_URL}"
+                git branch: 'master', credentialsId: "${GIT_CREDENTIALS}", url: "${REPO_URL}"
             }
         }
 
