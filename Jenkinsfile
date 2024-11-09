@@ -30,15 +30,15 @@ pipeline {
             }
         }
 
-        stage('Debug File Path') {
+        stage('Verify CSV File Upload') {
             steps {
                 script {
-                    // Print the resolved path to the CSV file
-                    echo "CSV file path from parameter: ${params.CSV_FILE}"
-                    
-                    // Print all environment variables to check available parameters and file paths
-                    echo "Printing all environment variables for debugging:"
-                    bat 'set'  // Use 'set' on Windows to print environment variables
+                    // Check if the CSV file path is null or empty
+                    if (params.CSV_FILE == null || params.CSV_FILE.trim() == "") {
+                        error "CSV file not uploaded. Please upload a valid CSV file to continue."
+                    } else {
+                        echo "CSV file path: ${params.CSV_FILE}"
+                    }
                 }
             }
         }
