@@ -66,7 +66,7 @@ with open(csv_path, newline='') as csvfile:
             print("Generated: {}".format(output_file))
                     """
                     
-                    // Run the Python script with the path to the uploaded CSV file
+                    // Pass the full path of the uploaded CSV file directly to the Python script
                     bat """
                     set PATH=C:\\Users\\Mick\\AppData\\Local\\Programs\\Python\\Python39;%PATH%
                     python generate_xml.py "%CSV_FILE%"
