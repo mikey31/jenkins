@@ -2,15 +2,15 @@ pipeline {
     agent any
 
     environment {
-        GIT_CREDENTIALS = '2c5fac76-196e-4e0a-81b2-ae175b03fea1'
+        GIT_CREDENTIALS = '2c5fac76-196e-4e0a-81b2-ae175b03fea1'  // Your Jenkins GitHub credentials ID
         REPO_URL = 'https://github.com/mikey31/jenkins.git'
         TEMPLATE_FILE = 'template.xml'
         XML_OUTPUT_DIR = 'output'
-        CSV_FILE_PATH = "input.csv"  // Fixed path to the CSV file in the workspace
     }
 
     parameters {
         string(name: 'BRANCH_NAME', defaultValue: 'feature/new-branch', description: 'Branch name for the new XML files')
+        file(name: 'CSV_FILE', description: 'Upload the CSV file to use for generating XML files')  // File parameter for CSV
     }
 
     stages {
@@ -30,16 +30,19 @@ pipeline {
             }
         }
 
-        stage('Verify CSV File in Workspace') {
+        stage('Check Uploaded CSV File') {
             steps {
                 script {
-                    // Check if CSV file exists in the workspace
-                    def fileExists = fileExists("${CSV_FILE_PATH}")
-                    if (!fileExists) {
-                        error "CSV file not found in workspace. Please upload it to the workspace with the name 'input.csv'."
+                    // Check if CSV file parameter is recognized and print its path
+                    if (params.CSV_FILE != null) {
+                        echo "CSV file parameter found. Path: ${params.CSV_FILE}"
                     } else {
-                        echo "CSV file found at ${CSV_FILE_PATH}"
+                        error "CSV file not uploaded. Please upload a valid CSV file."
                     }
+
+                    // Attempt to read the file to confirm access
+                    def csvContent = readFile file: "${params.CSV_FILE}"
+                    echo "CSV file content preview:\n${csvContent.take(500)}"  // Print the first 500 characters for inspection
                 }
             }
         }
@@ -53,6 +56,7 @@ import csv
 import os
 import sys
 
+# Use the CSV file passed as an argument
 csv_path = sys.argv[1]
 template_path = "${TEMPLATE_FILE}"
 output_dir = "${XML_OUTPUT_DIR}"
@@ -79,10 +83,10 @@ with open(csv_path, newline='') as csvfile:
             print("Generated: {}".format(output_file))
                     """
                     
-                    // Run the Python script with the fixed path to the CSV file
+                    // Run the Python script with the path to the uploaded CSV file
                     bat """
                     set PATH=C:\\Users\\Mick\\AppData\\Local\\Programs\\Python\\Python39;%PATH%
-                    python generate_xml.py "${CSV_FILE_PATH}"
+                    python generate_xml.py "${params.CSV_FILE}"
                     """
                 }
             }
