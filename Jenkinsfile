@@ -49,4 +49,17 @@ print("CSV Content:")
 print(df)
                     '''
 
-                    // Run the Python script 
+                    // Run the Python script using a bat command
+                    bat 'python process_csv.py'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline completed!'
+            deleteDir()  // Clean up workspace
+        }
+    }
+}
