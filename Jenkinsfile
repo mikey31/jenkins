@@ -5,19 +5,15 @@ pipeline {
         file(name: 'CSV_FILE', description: 'Upload a CSV file to process')
     }
 
-    environment {
-        CSV_FILENAME = "uploaded_file.csv"
-    }
-
     stages {
-        stage('Save Uploaded CSV') {
+        stage('Check Uploaded CSV') {
             steps {
                 script {
-                    // Check if the file is uploaded and rename it for consistent access
-                    if (fileExists(params.CSV_FILE)) {
-                        bat "rename ${params.CSV_FILE} ${env.CSV_FILENAME}"
-                    } else {
+                    // Check if the file is uploaded
+                    if (!params.CSV_FILE) {
                         error "CSV file not uploaded."
+                    } else {
+                        echo "CSV file uploaded: ${params.CSV_FILE}"
                     }
                 }
             }
@@ -26,8 +22,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 script {
-                    // Install Python and necessary packages if not already installed
-                    // Adjust this to your specific environment setup if needed
+                    // Ensure Python and pandas are available to handle CSV reading
                     bat '''
                     python --version || echo Please install Python manually.
                     pip install pandas
@@ -44,12 +39,12 @@ pipeline {
 import pandas as pd
 
 # Read the CSV file and display its contents
-df = pd.read_csv("uploaded_file.csv")
+df = pd.read_csv("CSV_FILE")
 print("CSV Content:")
 print(df)
-                    '''
+                    '''.replace("CSV_FILE", params.CSV_FILE))
 
-                    // Run the Python script using a bat command
+                    // Run the Python script using the bat command
                     bat 'python process_csv.py'
                 }
             }
