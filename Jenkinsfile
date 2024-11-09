@@ -30,6 +30,15 @@ pipeline {
             }
         }
 
+        stage('Debug File Path') {
+            steps {
+                script {
+                    // Print the resolved path to the CSV file
+                    echo "CSV file path: ${params.CSV_FILE}"
+                }
+            }
+        }
+
         stage('Generate XML Files') {
             steps {
                 script {
@@ -66,10 +75,10 @@ with open(csv_path, newline='') as csvfile:
             print("Generated: {}".format(output_file))
                     """
                     
-                    // Pass the full path of the uploaded CSV file directly to the Python script
+                    // Run the Python script with the exact path to the uploaded CSV file
                     bat """
                     set PATH=C:\\Users\\Mick\\AppData\\Local\\Programs\\Python\\Python39;%PATH%
-                    python generate_xml.py "%CSV_FILE%"
+                    python generate_xml.py "${params.CSV_FILE}"
                     """
                 }
             }
