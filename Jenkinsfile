@@ -5,25 +5,23 @@ pipeline {
         GIT_CREDENTIALS = '2c5fac76-196e-4e0a-81b2-ae175b03fea1'  // Your Jenkins GitHub credentials ID
         REPO_URL = 'https://github.com/mikey31/jenkins.git'
         TEMPLATE_FILE = 'template.xml'
-        CSV_FILE = 'input.csv'
         XML_OUTPUT_DIR = 'output'
     }
 
     parameters {
         string(name: 'BRANCH_NAME', defaultValue: 'feature/new-branch', description: 'Branch name for the new XML files')
+        file(name: 'CSV_FILE', description: 'Upload the CSV file to use for generating XML files')  // File parameter for CSV
     }
 
     stages {
         stage('Checkout') {
             steps {
-                // Use 'master' instead of 'main' as the branch name
                 git branch: 'master', credentialsId: "${GIT_CREDENTIALS}", url: "${REPO_URL}"
             }
         }
 
         stage('Prepare Environment') {
             steps {
-                // Only create the directory if it does not exist
                 bat """
                 if not exist ${XML_OUTPUT_DIR} (
                     mkdir ${XML_OUTPUT_DIR}
@@ -39,8 +37,10 @@ pipeline {
                     writeFile file: 'generate_xml.py', text: """
 import csv
 import os
+import sys
 
-csv_path = "${CSV_FILE}"
+# Use the CSV file uploaded to Jenkins as an argument
+csv_path = sys.argv[1]
 template_path = "${TEMPLATE_FILE}"
 output_dir = "${XML_OUTPUT_DIR}"
 
@@ -66,10 +66,10 @@ with open(csv_path, newline='') as csvfile:
             print("Generated: {}".format(output_file))
                     """
                     
-                    // Run the Python script with the specified Python path
+                    // Run the Python script with the uploaded CSV file as an argument
                     bat """
                     set PATH=C:\\Users\\Mick\\AppData\\Local\\Programs\\Python\\Python39;%PATH%
-                    python generate_xml.py
+                    python generate_xml.py %CSV_FILE%
                     """
                 }
             }
