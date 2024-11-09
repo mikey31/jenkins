@@ -1,19 +1,25 @@
 pipeline {
     agent any
 
+    parameters {
+        file(name: 'CSV_FILE', description: 'Upload a CSV file to process')
+    }
+
     environment {
-        GIT_CREDENTIALS = '2c5fac76-196e-4e0a-81b2-ae175b03fea1'
-        REPO_URL = 'https://github.com/mikey31/jenkins.git'
+        CSV_FILENAME = "input.csv"
     }
 
     stages {
-        stage('Clone Repository') {
+        stage('Save Uploaded CSV') {
             steps {
                 script {
-                    checkout([$class: 'GitSCM',
-                        branches: [[name: '*/main']],
-                        userRemoteConfigs: [[url: env.REPO_URL, credentialsId: env.GIT_CREDENTIALS]]
-                    ])
+                    // Check if the file is uploaded
+                    if (!params.CSV_FILE) {
+                        error "CSV file not uploaded."
+                    }
+
+                    // Save the uploaded file to a specific filename
+                    writeFile file: env.CSV_FILENAME, text: params.CSV_FILE.readToString()
                 }
             }
         }
@@ -21,25 +27,25 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 script {
-                    // Install Python if not available; adjust as needed for other dependencies.
+                    // Ensure Python and pandas are available to handle CSV reading
                     sh 'which python3 || sudo apt-get install -y python3'
                     sh 'pip3 install pandas'
                 }
             }
         }
 
-        stage('Read CSV File') {
+        stage('Process CSV File') {
             steps {
                 script {
-                    // Add a Python script to read and process the CSV.
+                    // Write a Python script to process the CSV file
                     writeFile file: 'process_csv.py', text: '''
 import pandas as pd
 
-# Adjust 'file.csv' to the actual path within your repository
-df = pd.read_csv('file.csv')
+# Read the CSV file and display its contents
+df = pd.read_csv("input.csv")
 print("CSV Content:")
 print(df)
-'''
+                    '''
 
                     // Execute the Python script
                     sh 'python3 process_csv.py'
@@ -51,6 +57,7 @@ print(df)
     post {
         always {
             echo 'Pipeline completed!'
+            deleteDir()  // Cleanup workspace
         }
     }
 }
