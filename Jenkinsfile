@@ -33,21 +33,23 @@ pipeline {
         stage('Locate CSV File') {
             steps {
                 script {
-                    // Check for the existence of any CSV file in the workspace using a batch command
-                    def csvFile = ''
+                    // Using a bat command to find the first CSV file in the workspace
                     bat """
-                    for %f in (*.csv) do set CSV_PATH=%f
-                    if defined CSV_PATH (
-                        echo Found CSV file: %CSV_PATH%
-                        set CSV_FILE=%CSV_PATH%
-                    ) else (
-                        echo No CSV file found in workspace.
+                    for %%f in (*.csv) do (
+                        set "CSV_PATH=%%f"
+                        goto :done
+                    )
+                    :done
+                    if not defined CSV_PATH (
+                        echo No CSV file found in the workspace.
                         exit /b 1
+                    ) else (
+                        echo Found CSV file: %CSV_PATH%
                     )
                     """
-
+                    
                     // Set the located CSV file path as an environment variable
-                    env.UPLOADED_CSV_FILE = csvFile
+                    env.UPLOADED_CSV_FILE = "%CSV_PATH%"
                 }
             }
         }
@@ -91,7 +93,7 @@ with open(csv_path, newline='') as csvfile:
                     // Run the Python script with the located CSV file path
                     bat """
                     set PATH=C:\\Users\\Mick\\AppData\\Local\\Programs\\Python\\Python39;%PATH%
-                    python generate_xml.py "${env.UPLOADED_CSV_FILE}"
+                    python generate_xml.py "%UPLOADED_CSV_FILE%"
                     """
                 }
             }
