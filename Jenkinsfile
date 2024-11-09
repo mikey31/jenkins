@@ -30,12 +30,20 @@ pipeline {
             }
         }
 
+        stage('List All Files in Workspace') {
+            steps {
+                echo "Listing all files in workspace to locate the uploaded CSV file:"
+                bat "dir /S /A"  // List all files and folders recursively
+            }
+        }
+
         stage('Locate CSV File in Workspace') {
             steps {
                 script {
-                    // Using a bat command to find the first CSV file in the workspace
+                    // Use a bat command to find the first CSV file in any subdirectory of the workspace
+                    def csvFilePath = ''
                     bat """
-                    for %%f in (%WORKSPACE%\\*.csv) do (
+                    for /R %%f in (*.csv) do (
                         set CSV_PATH=%%f
                         goto done
                     )
@@ -47,8 +55,8 @@ pipeline {
                         echo Found CSV file: %CSV_PATH%
                     )
                     """
-                    
-                    // Set the located CSV file path as an environment variable
+
+                    // Set the found CSV file path as an environment variable for later use
                     env.UPLOADED_CSV_FILE = "%CSV_PATH%"
                 }
             }
