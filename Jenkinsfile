@@ -35,14 +35,14 @@ pipeline {
             steps {
                 script {
                     // Write a Python script to read the CSV file
-                    writeFile file: 'process_csv.py', text: '''
+                    writeFile file: 'process_csv.py', text: """
 import pandas as pd
 
 # Read the CSV file and display its contents
-df = pd.read_csv("CSV_FILE")
+df = pd.read_csv('${params.CSV_FILE}')
 print("CSV Content:")
 print(df)
-                    '''.replace("CSV_FILE", params.CSV_FILE))
+                    """
 
                     // Run the Python script using the bat command
                     bat 'python process_csv.py'
