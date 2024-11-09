@@ -22,14 +22,18 @@ pipeline {
 
         stage('Prepare Environment') {
             steps {
-                bat "mkdir ${XML_OUTPUT_DIR}"  // Use Windows `mkdir` instead of `sh`
+                // Use if statement to check if directory exists before creating it
+                bat """
+                if not exist ${XML_OUTPUT_DIR} (
+                    mkdir ${XML_OUTPUT_DIR}
+                )
+                """
             }
         }
 
         stage('Generate XML Files') {
             steps {
                 script {
-                    // Write Python script for XML generation
                     writeFile file: 'generate_xml.py', text: """
 import csv
 import os
@@ -60,7 +64,6 @@ with open(csv_path, newline='') as csvfile:
             print("Generated: {}".format(output_file))
                     """
                     
-                    // Run the Python script using Windows `bat` command
                     bat 'python generate_xml.py'
                 }
             }
