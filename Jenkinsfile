@@ -13,9 +13,9 @@ pipeline {
         stage('Save Uploaded CSV') {
             steps {
                 script {
-                    // Rename the uploaded file to a consistent filename
+                    // Check if the file is uploaded and rename it for consistent access
                     if (fileExists(params.CSV_FILE)) {
-                        sh "mv ${params.CSV_FILE} ${env.CSV_FILENAME}"
+                        bat "rename ${params.CSV_FILE} ${env.CSV_FILENAME}"
                     } else {
                         error "CSV file not uploaded."
                     }
@@ -26,9 +26,12 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 script {
-                    // Install Python and pandas if they are not already available
-                    sh 'which python3 || sudo apt-get install -y python3'
-                    sh 'pip3 install pandas'
+                    // Install Python and necessary packages if not already installed
+                    // Adjust this to your specific environment setup if needed
+                    bat '''
+                    python --version || echo Please install Python manually.
+                    pip install pandas
+                    '''
                 }
             }
         }
@@ -36,27 +39,14 @@ pipeline {
         stage('Process CSV File') {
             steps {
                 script {
-                    // Write and execute a Python script to read the CSV
+                    // Write a Python script to read the CSV file
                     writeFile file: 'process_csv.py', text: '''
 import pandas as pd
 
-# Read the CSV file and print its content
+# Read the CSV file and display its contents
 df = pd.read_csv("uploaded_file.csv")
 print("CSV Content:")
 print(df)
                     '''
 
-                    // Run the Python script
-                    sh 'python3 process_csv.py'
-                }
-            }
-        }
-    }
-
-    post {
-        always {
-            echo 'Pipeline completed!'
-            deleteDir()  // Clean up the workspace
-        }
-    }
-}
+                    // Run the Python script 
