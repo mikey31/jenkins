@@ -33,18 +33,20 @@ pipeline {
         stage('Locate CSV File') {
             steps {
                 script {
-                    // Check if any CSV file is in the workspace
+                    // Check for the existence of any CSV file in the workspace using a batch command
                     def csvFile = ''
-                    def files = findFiles(glob: '*.csv')
-                    
-                    if (files.length > 0) {
-                        csvFile = files[0].path
-                        echo "CSV file found: ${csvFile}"
-                    } else {
-                        error "No CSV file found in the workspace. Please upload a valid CSV file to continue."
-                    }
-                    
-                    // Set the CSV file path as an environment variable for use in later stages
+                    bat """
+                    for %f in (*.csv) do set CSV_PATH=%f
+                    if defined CSV_PATH (
+                        echo Found CSV file: %CSV_PATH%
+                        set CSV_FILE=%CSV_PATH%
+                    ) else (
+                        echo No CSV file found in workspace.
+                        exit /b 1
+                    )
+                    """
+
+                    // Set the located CSV file path as an environment variable
                     env.UPLOADED_CSV_FILE = csvFile
                 }
             }
